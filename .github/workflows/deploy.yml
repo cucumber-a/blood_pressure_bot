@@ -26,4 +26,4 @@ jobs:
       - name: Deploy to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: railway up --service blood_pressure_bot --yes
+        run: railway up --service blood_pressure_bot --ci -- --yes
