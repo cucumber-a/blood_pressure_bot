@@ -1,4 +1,4 @@
-name: CI/CD Bot
+name: CI/CD for Blood Pressure Bot
 
 on:
   push:
@@ -10,20 +10,35 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      - run: npm install
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
-      - run: docker build -t blood_pressure_bot .
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Docker image
+        run: docker build -t blood_pressure_bot .
 
       - name: Install Railway CLI
         run: curl -sSL https://railway.app/install.sh | sh
 
+      - name: Add Railway CLI to PATH
+        run: echo "$HOME/.railway/bin" >> $GITHUB_PATH
+
       - name: Deploy to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: railway up --service blood_pressure_bot --ci -- --yes
+        run: railway up --ci
