@@ -23,8 +23,7 @@ jobs:
       - name: Install Railway CLI
         run: curl -sSL https://railway.app/install.sh | sh
 
-      - name: Login to Railway
-        run: railway login --apiKey ${{ secrets.RAILWAY_TOKEN }}
-
       - name: Deploy to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: railway up --service blood_pressure_bot --yes
