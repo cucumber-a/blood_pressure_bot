@@ -1,4 +1,4 @@
-name: Deploy to Railway
+name: CI/CD Bot
 
 on:
   push:
@@ -6,15 +6,29 @@ on:
       - master
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - run: npm install
+
+      - run: npm run lint
+
+      - run: npm test
+
+      - run: docker build -t blood_pressure_bot .
+
+      - name: Install Railway CLI
+        run: curl -sSL https://railway.app/install.sh | sh
+
+      - name: Login to Railway
+        run: railway login --apiKey ${{ secrets.RAILWAY_TOKEN }}
 
       - name: Deploy to Railway
-        uses: railwayapp/railway-action@v0.2.8
-        with:
-          service: blood_pressure_bot
-          token: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway up --service blood_pressure_bot --yes
