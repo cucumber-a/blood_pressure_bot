@@ -8,6 +8,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    container: ghcr.io/railwayapp/cli:latest
 
     steps:
       - name: Checkout code
@@ -40,6 +41,9 @@ jobs:
 
       - name: Deploy to Railway
         env:
+          SVC_ID: my-service-id
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: railway up --ci --service blood_pressure_bot --environment production -- --project "Blood Pressure"
+        steps:
+          - uses: actions/checkout@v3
+          - run: railway up --service=${{ env.SVC_ID }}
 
