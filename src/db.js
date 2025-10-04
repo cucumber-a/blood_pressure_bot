@@ -24,15 +24,6 @@ db.exec(`
     mood INTEGER,
     comment TEXT
   );
-  CREATE TABLE IF NOT EXISTS reminders (
-    id INTEGER PRIMARY KEY,
-    person_id INTEGER,
-    hour INTEGER,
-    minute INTEGER,
-    days TEXT,       -- "1,2,3,4,5" (1=Mon ... 7=Sun)
-    enabled INTEGER DEFAULT 1,
-    last_sent TEXT
-  );
 `);
 
 module.exports = {
@@ -62,14 +53,4 @@ module.exports = {
     return db.prepare('SELECT * FROM measurements WHERE person_id = ? AND created_at >= ? ORDER BY created_at DESC')
       .all(personId, sinceISOString);
   },
-  setReminder(personId, hour, minute, daysCsv) {
-    return db.prepare('INSERT INTO reminders (person_id, hour, minute, days) VALUES (?,?,?,?)')
-      .run(personId, hour, minute, daysCsv);
-  },
-  getActiveReminders() {
-    return db.prepare('SELECT r.*, p.name AS person_name, u.chat_id FROM reminders r JOIN persons p ON p.id=r.person_id JOIN users u ON u.id=p.user_id WHERE r.enabled=1').all();
-  },
-  updateReminderLastSent(id, isoDate) {
-    return db.prepare('UPDATE reminders SET last_sent = ? WHERE id = ?').run(isoDate, id);
-  }
 };

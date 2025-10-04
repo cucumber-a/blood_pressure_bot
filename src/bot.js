@@ -7,7 +7,6 @@ if (!token) { console.error('BOT_TOKEN not set'); process.exit(1); }
 
 const bot = new TelegramBot(token, { polling: true });
 
-// простое состояние для диалога: chatId -> state
 const states = new Map();
 
 // /start
@@ -15,7 +14,12 @@ bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
   const name = msg.from.first_name || msg.from.username || 'User';
   db.createUser(chatId, name);
-  bot.sendMessage(chatId, `Привет, ${name}! Чтобы добавить человека: /add_person`);
+  db.addPerson(chatId, name);
+  bot.sendMessage(chatId, `
+    Привет, ${name}! 
+    Добавить нового человека: /add_person
+    Список людей: /list_persons
+  `);
 });
 
 // /add_person
@@ -28,7 +32,7 @@ bot.onText(/\/add_person(?: (.+))?/, (msg, match) => {
     return;
   }
   states.set(chatId, { action: 'adding_person' });
-  bot.sendMessage(chatId, 'Как зовут человека? Введи имя:');
+  bot.sendMessage(chatId, 'Введи имя:');
 });
 
 // /list_persons
